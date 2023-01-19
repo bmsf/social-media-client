@@ -51,9 +51,26 @@ function fetchFailure(status = 400, statusText = 'Unauthorized') {
 }
 
 describe('login', () => {
-	it('Stores credentials if valid input is provided', async () => {
+	afterEach(async () => {
+		await global.fetch.mockReset();
+	});
+
+	it('Returns Unauthorized if provided with wrong credentials', async () => {
+		global.fetch = jest.fn(() => fetchFailure());
+
+		await expect(login('wronginfo', 'pw')).rejects.toThrow('Unauthorized');
+	});
+
+	it('Returns profile from api if provided with valid credentials', async () => {
 		global.fetch = jest.fn(() => fetchSuccess());
-		const item = await login(TEST_USER_EMAIL, TEST_USER_PASSWORD);
-		expect(item).toBe(TEST_USER);
+		const user = await login(TEST_USER_EMAIL, TEST_USER_PASSWORD);
+		expect(user).toBe(TEST_USER);
+	});
+	it('Stores the token from api call to localStorage to give user access', () => {
+		const testToken = 'token';
+		const testValue = 'profile';
+		save(testToken, testValue);
+
+		expect(localStorage.getItem(testToken)).toBe(JSON.stringify(testValue));
 	});
 });
