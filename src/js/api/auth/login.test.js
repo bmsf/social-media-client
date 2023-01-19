@@ -25,20 +25,22 @@ class LocalStorageMock {
 
 global.localStorage = new LocalStorageMock();
 
-const TEST_USER_EMAIL = 'testuser@stud.noroff.no';
-const TEST_USER_PASSWORD = 'testuser123';
-const TEST_USER_NAME = 'testuser';
-const TEST_USER = JSON.stringify({
-	email: TEST_USER_EMAIL,
-	name: TEST_USER_NAME,
+const test_user_email = 'testuser@stud.noroff.no';
+const test_user_pw = 'testuser123';
+const test_user_name = 'testuser';
+
+const test_user = JSON.stringify({
+	email: test_user_email,
+	name: test_user_name,
 });
+const test_bad_id = 'bad@id.no';
 
 function fetchSuccess() {
 	return Promise.resolve({
 		ok: true,
 		status: 200,
 		statusText: 'Authorized',
-		json: () => Promise.resolve(TEST_USER),
+		json: () => Promise.resolve(test_user),
 	});
 }
 
@@ -55,22 +57,23 @@ describe('login', () => {
 		await global.fetch.mockReset();
 	});
 
+	it('returns user info from api if provided with valid credentials', async () => {
+		global.fetch = jest.fn(() => fetchSuccess());
+		const user = await login(test_user_email, test_user_pw);
+		expect(user).toBe(test_user);
+	});
+	it('stores the token from api call to localStorage to give user access', async () => {
+		const testKey = 'key';
+		const testValue = 'value';
+		save(testKey, testValue);
+
+		expect(localStorage.getItem(testKey)).toBe(JSON.stringify(testValue));
+	});
+
 	it('Returns Unauthorized if provided with wrong credentials', async () => {
 		global.fetch = jest.fn(() => fetchFailure());
-
-		await expect(login('wronginfo', 'pw')).rejects.toThrow('Unauthorized');
-	});
-
-	it('Returns profile from api if provided with valid credentials', async () => {
-		global.fetch = jest.fn(() => fetchSuccess());
-		const user = await login(TEST_USER_EMAIL, TEST_USER_PASSWORD);
-		expect(user).toBe(TEST_USER);
-	});
-	it('Stores the token from api call to localStorage to give user access', () => {
-		const testToken = 'token';
-		const testValue = 'profile';
-		save(testToken, testValue);
-
-		expect(localStorage.getItem(testToken)).toBe(JSON.stringify(testValue));
+		await expect(() =>
+			login(test_bad_id, test_user_pw).toThrow('Unauthorized')
+		);
 	});
 });
