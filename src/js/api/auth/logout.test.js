@@ -1,6 +1,5 @@
 import { logout } from './index';
-import { remove } from '../../storage';
-import { save } from '../../storage';
+import { load, save } from '../../storage/index';
 
 class LocalStorageMock {
 	constructor() {
@@ -24,23 +23,15 @@ class LocalStorageMock {
 	}
 }
 
-const test_user_email = 'testuser@stud.noroff.no';
-const test_user_pw = 'testuser123';
-const test_user_name = 'testuser';
-const test_user = JSON.stringify({
-	email: test_user_email,
-	name: test_user_name,
-});
-
 global.localStorage = new LocalStorageMock();
 
 describe('logout', () => {
-	it('Should clear the users token from localStorage', () => {
-		const testKey = 'key';
-		const testValue = 'value';
+	it('should clear the users token from localStorage', () => {
+		const testKey = 'token';
+		const testValue = 'profile';
 		save(testKey, testValue);
-		expect(localStorage.getItem(testKey)).toBe(JSON.stringify(testValue));
-		remove(testKey);
-		expect(localStorage.getItem(testKey)).toEqual(undefined || null);
+		expect(load(testKey)).toBe(testValue);
+		logout();
+		expect(load(testKey)).toEqual(undefined || null);
 	});
 });

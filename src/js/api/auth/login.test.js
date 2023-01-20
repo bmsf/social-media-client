@@ -1,5 +1,5 @@
 import { login } from './login';
-import { save } from '../../storage/index';
+import { load, save } from '../../storage/index';
 
 class LocalStorageMock {
 	constructor() {
@@ -67,10 +67,10 @@ describe('login', () => {
 		const testValue = 'value';
 		save(testKey, testValue);
 
-		expect(localStorage.getItem(testKey)).toBe(JSON.stringify(testValue));
+		expect(load(testKey)).toBe(testValue);
 	});
 
-	it('Returns Unauthorized if provided with wrong credentials', async () => {
+	it('returns Unauthorized if provided with wrong credentials', async () => {
 		global.fetch = jest.fn(() => fetchFailure());
 		await expect(() =>
 			login(test_bad_id, test_user_pw).toThrow('Unauthorized')
